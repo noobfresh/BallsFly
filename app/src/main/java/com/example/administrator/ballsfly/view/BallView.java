@@ -12,14 +12,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.OvershootInterpolator;
 
 import com.example.administrator.ballsfly.Point;
 import com.example.administrator.ballsfly.PointEvaluator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Random;
 
 /**
@@ -30,26 +28,10 @@ public class BallView extends View {
 
     public static final String TAG = "BallView";
 
-    private Point currentPoint;// 当前点坐标
-
     private List<Point> pointList = new ArrayList<>();
 
     private Paint mPaint;// 绘图画笔
-    private boolean flag;
 
-    private List<BallView> nearBall;
-
-    public BallView(Context context, float startX, float startY, int color) {
-        super(context);
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setColor(color);
-        Random random = new Random();
-//        this.currentPoint = new Point(startX, startY, random.nextInt(10), random.nextFloat()/1);
-        Point temp = new Point(random.nextInt(690), random.nextInt(1250),
-                random.nextInt(10), random.nextFloat()/1);
-        pointList.add(temp);
-        this.flag = true;
-    }
 
 
     public BallView(Context context, @Nullable AttributeSet attrs) {
@@ -57,51 +39,44 @@ public class BallView extends View {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(Color.BLACK);
         Random random = new Random();
-//        this.currentPoint = new Point(startX, startY, random.nextInt(10), random.nextFloat()/1);
-        for(int i = 0; i < 20; i++){
-            Point temp = new Point(random.nextInt(660) + 30, random.nextInt(1220) + 30,
+        for(int i = 0; i < 50; i++){
+            Point temp = new Point(random.nextInt(1080 - 2*PointEvaluator.ballRadius) + PointEvaluator.ballRadius,
+                    random.nextInt(1800 - 2*PointEvaluator.ballRadius) + PointEvaluator.ballRadius,
                     random.nextInt(10) + 1, random.nextFloat()/1);
             pointList.add(temp);
         }
-        flag = true;
+        //初始化的操作 一般都有构造函数这个时候作为时机 调用！
+        setupAnimator();
+
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(flag){
-            setupAnimator();
-            flag = false;
-        }else {
-            long start = System.currentTimeMillis();
 
 
-            for(Point point : pointList){
-                canvas.drawCircle(point.getX(), point.getY(), 30, mPaint);
-                drawLine(canvas, point);
-            }
-            long end = System.currentTimeMillis();
-//            if((end - start) > 10){
-                Log.d(TAG, "onDraw: time = " + (end - start));
-//                Log.d(TAG, "onDraw: size = " + nearBall.size());
-//            }
+        long start = System.currentTimeMillis();
 
+
+        for (Point point : pointList) {
+            canvas.drawCircle(point.getX(), point.getY(), 30, mPaint);
+            drawLine(canvas, point);
         }
-    }
+        long end = System.currentTimeMillis();
+        Log.d(TAG, "onDraw: time = " + (end - start));
 
 
-    public void setNearBall(List<BallView> nearBall) {
-        this.nearBall = nearBall;
-    }
 
-    public Point getCurrentPoint() {
-        return currentPoint;
     }
 
     public void setupAnimator(){
         ValueAnimator animator = ValueAnimator.ofObject(new PointEvaluator(), pointList, null);
 
-        animator.setDuration(Long.MAX_VALUE);
+        //肯定有设置动画无限的地方的
+        animator.setDuration(1000);
+
+        //动画的刷新效果 是看自己在updateListener里面的更新操作，更新操作不一定要放在Evaluator里，也可以直接在Listener中完成
+        animator.setRepeatCount(ValueAnimator.INFINITE);
 
         Interpolator linearInterpolator = new LinearInterpolator();
 

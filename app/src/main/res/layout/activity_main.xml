@@ -9,8 +9,8 @@
 
     <FrameLayout
         android:id="@+id/linear"
-        android:layout_width="720px"
-        android:layout_height="1280px"
+        android:layout_width="1080px"
+        android:layout_height="1800px"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
